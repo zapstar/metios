@@ -3,12 +3,8 @@ all: boot
 
 # Invoke make on boot loader
 boot:
-	$(MAKE) -c boot
-
-# Run the operating system
-run:
-	bochs
+	cd boot && $(MAKE)
 
 # Cleanup
 clean:
-	$(MAKE) -c clean
+	cd bin && $(MAKE)
