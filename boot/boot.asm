@@ -5,9 +5,6 @@
 ; Real mode
 bits 16
 
-; BIOS loads us at 0x7c00 (0x07c0:0x0000) so this code should assume the same
-org 0x7c00
-
 ; BIOS partition block START (or else Windows will show us "Not formatted")
 start:
 	jmp boot_loader			; Three bytes of jump instruction
@@ -53,18 +50,32 @@ bs_filesystem:
 
 ; Bootloader code
 boot_loader:
+
+; Disable interrupts
+	cli
+
 ; Clear the AX, DS and ES registers
-; DS and ES should be zero because data and code is in the same segment.
-	xor ax, ax
+; Set all the segment registers to 0x07c0
+; BIOS loads the code at address 0x07c00 (20bit real mode)
+	mov ax, 0x7c0
 	mov ds, ax
 	mov es, ax
+	mov fs, ax
+	mov gs, ax
+
+; Now create the stack of size 65536
+	xor ax, ax	; Clear AX
+	mov ss, ax	; Stack segment at 0x0000
+	mov sp, 0xffff	; Our stack pointer at 0xFFFF
+
+; Enable interrupts again
+	sti
 
 ; Print our message
 	mov si, welcome_msg
 	call debug_print
 
-; Finally disable interrupts
-	cli
+
 
 ; Halt the CPU
 	hlt
@@ -76,12 +87,12 @@ welcome_msg:
 ;; Debug print routine
 ; @pre: SI should contain the address of the string
 debug_print:
-	lodsb
-	cmp al, 0
-	jz debug_done
-	mov ah, 0eh
-	int 0x10
-	jmp debug_print
+	lodsb			; Picks a byte from SI into AL
+	cmp al, 0		; See if we have reached the end of the string
+	jz debug_done	; If so, prepare to exit the routine
+	mov ah, 0eh		; Print on TTY
+	int 0x10		; Make the INT call
+	jmp debug_print	; Get ready to print more
 debug_done:
 	ret
 

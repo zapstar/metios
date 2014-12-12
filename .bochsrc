@@ -10,21 +10,12 @@ boot: a
 # Floppy Disk A characteristics (1.44M, inserted)
 floppya: 1_44="bin/boot.img", status=inserted
 
-# Log file
-log: log/bochs.out
-
 # Disable mouse
 mouse: enabled=0
 
 # Give 32MB RAM
 megs: 32
 
-# Sync the clock inside Bochs to real time
-clock: sync=realtime
-
-# The number of instructions per second
-cpu: ips=500000
-
-# Tell bochs what do in case of errors
+# Tell Bochs what do in case of errors
 error: action=report
 info: action=report
