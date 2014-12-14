@@ -61,7 +61,7 @@ bs_filesystem:
 ; Debug print routine
 ; @pre: SI should contain the address of the string
 ;******************************************************************************
-debug_print:
+bios_print_msg:
 .read_next:
 	lodsb		; Picks a fresh byte from SI into AL
 	cmp al, 0	; See if we have reached the end of the string
@@ -126,13 +126,26 @@ read_sectors:
 ; Success in reading 1 sector, see if we need to read the next one
 .success:
 	mov si, progress_msg
-	call debug_print
+	call bios_print_msg
 	pop cx
 	pop bx
 	pop ax
 	add bx, word [bpb_bytespersector]	; Next address to load
 	inc ax					; Next sector
 	loop .main
+	ret
+
+;******************************************************************************
+; Routine to convert from CHS to LBA
+; @post: AX will have the LBA
+; LBA = (cluster - 2) * sectors per cluster
+;******************************************************************************
+cluster_to_lba:
+	sub ax, 2				; For formula above
+	xor cx, cx
+	mov cl, byte [bpb_sectorspercluster]	; For multiplication
+	mul cx
+	add ax, word [data_sector]		; Base data sector correction
 	ret
 
 ;******************************************************************************
@@ -165,7 +178,7 @@ boot_loader:
 
 ; Print our message
 	mov si, welcome_msg
-	call debug_print
+	call bios_print_msg
 
 ;******************************************************************************
 ; Load root directory table into memory
@@ -189,9 +202,10 @@ boot_loader:
 	mul word [bpb_sectorsperfat]		; sectors used by FATs
 	add ax, word [bpb_reservedsectors]	; Adjust for reserved sectors
 ; Keep the actual start of data sector in a global variable
+; This is useful in converting CHS to LBA
 	mov word [data_sector], ax
 	add word [data_sector], cx
-	mov bx, 0x0200		; Copy the root directory at 0x07c0:0x0200
+	mov bx, [boot_mem_end]	; Copy the root directory at 0x07c0:0x0200
 	call read_sectors	; Read the root directory into memory
 
 ;******************************************************************************
@@ -217,17 +231,100 @@ boot_loader:
 	pop di
 	pop cx
 
+; Now DI will have address of the root directory entry for second stage
+; bootloader. Save that in variable current_cluster
+	mov dx, word [di + 26]
+	mov word [current_cluster], dx
+
+; Print new line indicating that root directory has been loaded successfully
+	mov si, newline_msg
+	call bios_print_msg
+
+;******************************************************************************
+; Code to load FAT into memory (0x07c0:0x0200)
+; We don't need the root directory any more as we already have
+; the second stage bootloader
+;******************************************************************************
+; First compute the size of FAT and store it in CX
+	xor ax, ax
+	mov al, [bpb_numberoffats]
+	mul word [bpb_sectorsperfat]
+	mov cx, ax
+; Now compute location of FAT and store it in AX
+	mov ax, word [bpb_reservedsectors]
+; Read the FAT into memory
+	mov bx, word [boot_mem_end]
+	call read_sectors
+
+; Print new line indicating that FAT has been loaded successfully
+	mov si, newline_msg
+	call bios_print_msg
+
+;******************************************************************************
+; Load the stage 2 bootloader at address (0x0010:0x0000)
+;******************************************************************************
+; The address where the second stage bootloader at ES:BX
+	mov ax, word [boot2_high_add]
+	mov es, ax
+	mov bx, word [boot2_low_add]
+	push bx
+load_image:
+	mov ax, word [current_cluster]		; Cluster to be read
+	pop bx
+	call cluster_to_lba
+	xor cx, cx
+	mov cl, byte [bpb_sectorspercluster]	; Number of clusters
+	call read_sectors
+	push bx
+; Compute the next cluster
+	mov ax, word [current_cluster]		; Copy of current_cluster
+	mov cx, ax				; Copy of current_cluster
+	mov dx, ax				; Copy of current_cluster
+	shr dx, 1
+	add cx, dx				;CX = 1.5 * current_cluster
+	mov bx, [boot_mem_end]			; ES:BX has FAT in memory
+; Store address of the index of FAT for current cluster in BX
+	add bx, cx
+	mov dx, word [bx]			; Read next cluster into DX
+; See if we were dealing with even or odd current cluster
+	test ax, 1
+	jnz .odd_cluster
+.even_cluster:
+; Select the lower twelve bits
+	and dx, 0000111111111111b
+	jmp .move_past_odd
+.odd_cluster:
+; Select the higher twelve bits
+	shr dx, 4
+.move_past_odd:
+; store the new cluster as the current cluster
+	mov word [current_cluster], dx
+; End of file will have cluster number as 0x0ff0
+	cmp dx, 0x0ff0
+	jb load_image
+
+; Print new line indicating the end of second stage bootloader image load
+	mov si, newline_msg
+	call bios_print_msg
+
+;******************************************************************************
+; Make a far jump and start running the second stage boot loader
+;******************************************************************************
+	mov ax, word [boot2_high_add]
+	push ax
+	mov ax, word [boot2_low_add]
+	push ax
+	retf
+;******************************************************************************
 ; SHOULD NOT COME HERE
-; Disable interrupts and halt the CPU
-	cli
-	hlt
+;******************************************************************************
 
 ;******************************************************************************
 ; Handle failures
 ;******************************************************************************
 boot_failure:
 	mov si, failure_msg
-	call debug_print
+	call bios_print_msg
 	mov ah, 0		; Await a keyboard input
 	int 0x16
 	int 0x19		; Warm reboot
@@ -248,11 +345,21 @@ abs_head	db	0x00
 ; Absolute track number on the actual disk
 abs_trak	db	0x00
 
+; Boot sector end (ES: 0x07c00, then we'll be + 512)
+boot_mem_end	dw	0x0200
+
 ; Start of data sector
 data_sector	dw	0x0000
 
-; Cluster number
-cluster_num	dw	0x0000
+; Current cluster. Will initially point to the first cluster of the
+; second stage bootloader
+current_cluster	dw	0x0000
+
+; Second stage bootloader image's desired higher address
+boot2_high_add	dw	0x0020
+
+; Second stage bootloader image's desired lower address
+boot2_low_add	dw	0x0000
 
 ; Progress bar message
 progress_msg	db	"#", 0
@@ -270,16 +377,15 @@ welcome_msg	db	"Weclome to MiteOS", 13, 10, 0
 failure_msg	db	"ERROR: Press a key to reboot.", 13, 10, 0
 
 ;******************************************************************************
-; Pad with zeros
+; Pad with zeros and the magic number
 ;******************************************************************************
 
 ; Fill the rest up to 512 bytes with zeros
-times		(510 - ($ - $$)) db 0
+times	(510 - ($ - $$))	db	0
 
 ; Magic Number
 boot_magic:
 	dw	0xaa55
 
 ; Floppy size is 1,474,560 bytes
-; Now 1474560 - 512 = 1474048 bytes
-times		1474048 db 0
+times	(1474560 - ($ - $$))	db	0
