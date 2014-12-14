@@ -330,7 +330,7 @@ boot_failure:
 	int 0x19		; Warm reboot
 
 ;******************************************************************************
-; Global variables
+; Global variables (DATA SECTION)
 ;******************************************************************************
 
 ; BIOS gives us the boot drive number, make sure we keep it
@@ -345,6 +345,11 @@ abs_head	db	0x00
 ; Absolute track number on the actual disk
 abs_trak	db	0x00
 
+;******************************************************************************
+; This memory is used to store the root directory temporarily and holds
+; a copy of the both the FATs in the memory which is used to fetch the
+; image of the second stage bootloader
+;******************************************************************************
 ; Boot sector end (ES: 0x07c00, then we'll be + 512)
 boot_mem_end	dw	0x0200
 
@@ -355,6 +360,12 @@ data_sector	dw	0x0000
 ; second stage bootloader
 current_cluster	dw	0x0000
 
+;******************************************************************************
+; NOTE: Currently we're planning to put the second stage bootloader at 0x20000
+; This puts a limitation on the size of the second stage bootloader
+; Video memory starts at 0xA0000 and for this reason our second stage
+; bootloader cannot exceed 524288 bytes in size (exactly 512KB)
+;******************************************************************************
 ; Second stage bootloader image's desired higher address
 boot2_high_add	dw	0x0020
 
@@ -378,6 +389,7 @@ failure_msg	db	"ERROR: Press a key to reboot.", 13, 10, 0
 
 ;******************************************************************************
 ; Pad with zeros and the magic number
+; We barely made it with 12 bytes remaining to hit the 510 byte mark!
 ;******************************************************************************
 
 ; Fill the rest up to 512 bytes with zeros

@@ -1,54 +1,50 @@
+;******************************************************************************
+; MiteOS Stage 2 Bootloader main source file
+; @author: Thirumal Venkat
 
+; @pre: We are loaded at linear address 0x20000
+;******************************************************************************
 
-;*********************************************
-;	Stage2.asm
-;		- Second Stage Bootloader
-;
-;	Operating Systems Development Series
-;*********************************************
+; Real mode
+bits	16
 
-org 0x0					; offset to 0, we will set segments later
+; Let's assume that our code is aligned to zero, we'll change it later on
+org	0
 
-bits 16					; we are still in real mode
+	jmp main
 
-; we are loaded at linear address 0x10000
+;******************************************************************************
+; Debug print routine
+; @pre: SI should contain the address of the string
+;******************************************************************************
+bios_print_msg:
+.read_next:
+	lodsb		; Picks a fresh byte from SI into AL
+	cmp al, 0	; See if we have reached the end of the string
+	jz .debug_done	; If so, prepare to exit the routine
+	mov ah, 0x0e	; Print on TTY
+	int 0x10	; Make the INT call
+	jmp .read_next	; Get ready to print more
+.debug_done:
+	ret
 
-jmp main				; jump to main
-
-;*************************************************;
-;	Prints a string
-;	DS=>SI: 0 terminated string
-;************************************************;
-
-Print:
-	lodsb					; load next byte from string from SI to AL
-	or			al, al		; Does AL=0?
-	jz			PrintDone	; Yep, null terminator found-bail out
-	mov			ah,	0eh	; Nope-Print the character
-	int			10h
-	jmp			Print		; Repeat until null terminator found
-PrintDone:
-	ret					; we are done, so return
-
-;*************************************************;
-;	Second Stage Loader Entry Point
-;************************************************;
+;******************************************************************************
+; Second Stage boot loader entry point
+;******************************************************************************
 
 main:
-	cli					; clear interrupts
-	push			cs		; Insure DS=CS
-	pop			ds
+; Ensure that code segment and the data segment both are the same
+	push cs
+	pop ds
+; Print the initializing message for us
+	mov si, boot2_init_msg
+	call bios_print_msg
+; HALT for now. We'll look at what to do here later on
+	cli			; Disable interrupts
+	hlt			; Halt the system
 
-	mov			si, Msg
-	call			Print
+;******************************************************************************
+; Global variables (DATA SECTION)
+;******************************************************************************
 
-	cli					; clear interrupts to prevent triple faults
-	hlt					; hault the syst
-
-;*************************************************;
-;	Data Section
-;************************************************;
-
-Msg	db	"Preparing to load operating system...",13,10,0
-
-
+boot2_init_msg	db	"Intializing second stage bootloader...", 13, 10, 0
