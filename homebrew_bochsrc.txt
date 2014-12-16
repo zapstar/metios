@@ -1,14 +1,16 @@
+# Bochsrc file for home brew bootloader
+
 # Use SDL Library instead of X, Ubuntu workaround
 display_library: sdl
 
-# Config Interface is textual instead of X Windows
+# Configuration Interface is textual instead of X Windows
 config_interface: textconfig
 
 # Boot using Floppy Disk A
 boot: a
 
 # Floppy Disk A characteristics (1.44M, inserted)
-floppya: 1_44="bin/boot.img", status=inserted
+floppya: 1_44="bin/homebrew_floppy.img", status=inserted
 
 # Disable mouse
 mouse: enabled=0
