@@ -261,7 +261,7 @@ boot_loader:
 	call bios_print_msg
 
 ;******************************************************************************
-; Load the stage 2 bootloader at address (0x0010:0x0000)
+; Load the stage 2 bootloader at address (0x0020:0x0000)
 ;******************************************************************************
 ; The address where the second stage bootloader at ES:BX
 	mov ax, word [boot2_high_add]
@@ -401,3 +401,4 @@ boot_magic:
 
 ; Floppy size is 1,474,560 bytes
 times	(1474560 - ($ - $$))	db	0
+
