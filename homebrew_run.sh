@@ -6,6 +6,7 @@
 set -e
 
 # First compile the bootloader
+mkdir -p bin/
 cd boot/
 make
 cd ../
