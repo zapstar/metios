@@ -22,4 +22,4 @@ umount /mnt
 losetup -d /dev/loop0
 
 # Run home made bootloader and kernel
-bochs -f homebrew_bochsrc.txt
+bochs -f homebrew_bochsrc-linux.txt
