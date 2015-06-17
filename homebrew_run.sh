@@ -2,6 +2,9 @@
 
 # Home made bootloader and kernel run script
 
+# (Should be root) This is because we mount the floppy drive to copy second
+# stage bootloader into a mounted file system.
+
 # Stop on error
 set -e
 
