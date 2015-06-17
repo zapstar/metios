@@ -49,7 +49,8 @@ echo Error mounting floppy, please make sure A drive is free && goto :error
 
 rem Now copy second stage bootloader onto floppy
 copy bin\KERNLD.SYS %DRIVE%:\ || ^
-echo Error copying second stage bootloader. Remove floppy manually && goto :error
+echo Error copying second stage bootloader. Remove floppy manually ^
+&& goto :error
 
 rem Unmount the floppy, make it ready to boot
 imdisk -D -m %DRIVE%: || ^
