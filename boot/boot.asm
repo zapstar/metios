@@ -62,6 +62,7 @@ bs_filesystem:
 ; @pre: SI should contain the address of the string
 ;******************************************************************************
 bios_print_msg:
+	pusha
 .read_next:
 	lodsb		; Picks a fresh byte from SI into AL
 	cmp al, 0	; See if we have reached the end of the string
@@ -70,6 +71,7 @@ bios_print_msg:
 	int 0x10	; Make the INT call
 	jmp .read_next	; Get ready to print more
 .debug_done:
+	popa
 	ret
 
 ;******************************************************************************
@@ -101,9 +103,7 @@ read_sectors:
 .main:
 	mov di, 5				; 5 retries
 .sector_loop:
-	push ax
-	push bx
-	push cx
+	pusha
 	call lba_to_chs				; Now abs_* will be filled
 	mov ah, 2
 	mov al, 1
@@ -127,9 +127,7 @@ read_sectors:
 .success:
 	mov si, progress_msg
 	call bios_print_msg
-	pop cx
-	pop bx
-	pop ax
+	popa
 	add bx, word [bpb_bytespersector]	; Next address to load
 	inc ax					; Next sector
 	loop .main

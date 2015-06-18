@@ -15,8 +15,7 @@
 bits 16
 
 puts16:
-	push ax		; Save AX register
-	push si		; Save SI register
+	pusha		; Save registers
 	mov ah, 0eh	; Set 0x0E to AH to invoke print when BIOS interrupt
 puts16loop:
 	lodsb		; Fetch a byte from [SI] into AL
@@ -25,8 +24,7 @@ puts16loop:
 	int 10h		; Invoke BIOS interrupt
 	jmp puts16loop	; Go back to the loop
 puts16done:
-	pop si		; Restore SI register
-	pop ax		; Restore AX register
+	popa		; Restore registers
 	ret
 ;*******************************************************************************
 
