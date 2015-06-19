@@ -166,7 +166,7 @@ boot_loader:
 ; Now create the stack
 	xor ax, ax	; Clear AX
 	mov ss, ax	; Stack segment at 0x0000
-	mov sp, 0xffff	; Our stack pointer at 0xFFFF
+	mov sp, 0xffff	; Our stack pointer at 0xFFFF (0x00007E00 - 0x0009FFFF)
 
 ; Save boot drive information for later (Given to us by BIOS)
 	mov [boot_drive], dl
@@ -259,7 +259,7 @@ boot_loader:
 	call bios_print_msg
 
 ;******************************************************************************
-; Load the stage 2 bootloader at address (0x2000:0x0000)
+; Load the stage 2 bootloader at address (0x2000:0x0000 = 0x20000)
 ;******************************************************************************
 ; The address where the second stage bootloader at ES:BX
 	mov ax, word [boot2_high_add]
