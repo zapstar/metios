@@ -259,7 +259,7 @@ boot_loader:
 	call bios_print_msg
 
 ;******************************************************************************
-; Load the stage 2 bootloader at address (0x2000:0x0000 = 0x20000)
+; Load the stage 2 bootloader at address (0x0000:0x0500 = 0x500)
 ;******************************************************************************
 ; The address where the second stage bootloader at ES:BX
 	mov ax, word [boot2_high_add]
@@ -359,13 +359,14 @@ data_sector	dw	0x0000
 current_cluster	dw	0x0000
 
 ;******************************************************************************
-; NOTE: Currently we're planning to put the second stage bootloader at 0x20000
-; This puts a limitation on the size of the second stage bootloader
-; Video memory starts at 0xA0000 and for this reason our second stage
-; bootloader cannot exceed 524288 bytes in size (exactly 512KB)
+; NOTE: We're putting the second stage bootloader at linear address 0x500
+; This puts a limitation on the size of the bootloader to  0x7BFF - 0x500 =
+; 30463 bytes. This area of memory is between BIOS Data Area and this bootloader
+; We keep the second stage here so that it is easy for us to move to protected
+; mode after entering into it.
 ;******************************************************************************
 ; Second stage bootloader image's desired higher address
-boot2_high_add	dw	0x2000
+boot2_high_add	dw	0x0050
 
 ; Second stage bootloader image's desired lower address
 boot2_low_add	dw	0x0000

@@ -2,11 +2,11 @@
 ; MiteOS Stage 2 Bootloader main source file
 ; @author: Thirumal Venkat
 
-; @pre: We are loaded at linear address 0x20000
+; @pre: We are loaded at linear address 0x500
 ;******************************************************************************
 
 ; Let's assume that our code is aligned to zero, we'll change segments later on
-org	0x20000
+org	0x500
 
 ; Start executing from main routine
 	jmp main
@@ -31,15 +31,15 @@ main:
 ; Disable interrupts for a while
 	cli
 
-; Make sure code segment and data segment point to 0x20000
-	push cs
-	pop ds
-
-; Our stack starts from 0x20000 and is till 0x07E00
+; Make sure segment registers are NULL (except code segment)
 	xor ax, ax
-	mov sp, 0xffff
-	mov ax, 0x9000
+	mov ds, ax
+	mov es, ax
+	mov fs, ax
+	mov gs, ax
+; Our stack starts from 0xFFFF and is till 0x07E00
 	mov ss, ax
+	mov sp, 0xffff
 
 ; Enable interrupts again
 	sti
@@ -59,7 +59,7 @@ main:
 
 ; NOTE: Do NOT enable interrupts now, will triple fault if done so
 
-; Make a far jump with offset 0x08 in the GDT
+; Make a far jump with offset 0x08 (code descriptor) in the GDT
 	jmp 0x08:stage3
 
 ;*******************************************************************************
@@ -74,20 +74,14 @@ main:
 stage3:
 bits 32
 
-; Now setup our data segment
+; Now setup our data, extended and stack segments with data descriptor
 	mov ax, 0x10
 	mov ds, ax
 	mov es, ax
 	mov ss, ax
 
-; Zero out unused segments
-	mov ax, 0x00
-	mov fs, ax
-	mov gs, ax
-
 ; Setup stack for 32-bit mode
-	mov esp, 0x90000
+	mov esp, 0x9ffff
 
 ; HALT for now. We'll look at what to do here later on
-;	cli
-;	hlt			; Halt the system
+	hlt			; Halt the system

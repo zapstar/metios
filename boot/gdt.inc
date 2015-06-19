@@ -75,8 +75,7 @@ gdt_start:
 			; Bit 6: Segment Type (32-bit = 1, 16-bit = 0)
 			; Bit 7: Granularity (4K bound segment = 1, None = 0)
 	db 0x00		; Byte 7: Base Address 24 - 32 bits
-gdt_end:
 gdt_toc:
-	dw gdt_end - gdt_start - 1	; Size of GDT - 1
+	dw gdt_toc - gdt_start - 1	; Size of GDT - 1
 	dd gdt_start			; Base Address for the GDT
 %endif ;__BIOS__GDT_INC_

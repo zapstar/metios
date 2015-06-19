@@ -8,15 +8,16 @@ rem This script should be run as an administrator, we mount a floppy
 rem Set the drive letter for floppy (change it to any unused value)
 set DRIVE=A
 
-set BOCHS=bochs
-rem set BOCHS=bochsdbg
+set BOCHS=bochsdbg
+rem Comment out the following line to use debug Bochs
+rem set BOCHS=bochs
 
 rem Check for NASM installation
 where nasm || ^
 echo NASM not in PATH && goto :error
 
 rem Check for Bochs installation
-where bochs || ^
+where %BOCHS% || ^
 echo Bochs not in PATH && goto :error
 
 rem Check for ImDisk installation
@@ -32,11 +33,11 @@ cd boot || ^
 echo Did not find bootloader directory && goto :error
 
 rem Compile the first stage bootloader
-nasm boot.asm -f bin -o ..\bin\homebrew_floppy.img || ^
+nasm boot.asm -f bin -o ..\bin\homebrew_floppy.img || cd ..\  ^
 echo Error building first stage bootloader && goto :error
 
 rem Compile the second stage bootloader
-nasm stage2.asm -f bin -o ..\bin\KERNLD.SYS || ^
+nasm stage2.asm -f bin -o ..\bin\KERNLD.SYS || cd ..\  && ^
 echo Error building second stage bootloader && goto :error
 
 rem Return back home
@@ -49,11 +50,10 @@ echo Error mounting floppy, please make sure A drive is free && goto :error
 
 rem Now copy second stage bootloader onto floppy
 copy bin\KERNLD.SYS %DRIVE%:\ || ^
-echo Error copying second stage bootloader. Remove floppy manually ^
-&& goto :error
+echo Error copying 2nd stage bootloader. Remove floppy manually && goto :error
 
 rem Unmount the floppy, make it ready to boot
-imdisk -D -m %DRIVE%: || ^
+imdisk -D -m %DRIVE%:\ || ^
 echo Error unmounting floppy, please force remove manually && goto :error
 
 rem Run home made bootloader and kernel
