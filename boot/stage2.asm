@@ -4,6 +4,7 @@
 
 ; @pre: We are loaded at linear address 0x500
 ;******************************************************************************
+bits 16
 
 ; Let's assume that our code is aligned to zero, we'll change segments later on
 org	0x500
@@ -74,8 +75,11 @@ main:
 ; But as the segment descriptors are setup with no translation so we'll still
 ; be using identity mapping
 ;
-; By making the far jump to here our %cs and %eip would have been reloaded
+; By making the far jump to here our %CS and %EIP would have been reloaded
 ;
+; Import 32-bit VGA routines
+%include "video32.inc"
+
 stage3:
 bits 32
 
@@ -88,5 +92,96 @@ bits 32
 ; Setup stack for 32-bit mode
 	mov esp, 0x9ffff
 
+; Clear the screen
+	call clrscr
+
+; Print a welcome message
+	mov esi, .miteos_msg
+	call puts32
+
 ; HALT for now. We'll look at what to do here later on
+	cli			; Disable interrupts
 	hlt			; Halt the system
+
+; Message to be printed on 13th line in the center of the screen
+.miteos_msg:
+	db	10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10
+	db	"                                     "
+	db	"METIOS"
+	db	0
+
+; Stage 3 Bootloader VGA Driver Test Data
+;msg	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"Newline and Overflow Slide Up Test", 0x0A,
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	"+=AbCdEfGhIjKlMnOpQrStUvWxYz0123456789*!"
+;	db	0

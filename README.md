@@ -15,8 +15,13 @@ Progress
 	- [X] Build Scripts for Linux
 	- [X] Build Scripts for Windows
 - [ ] Second stage bootloader (loads the kernel)
-	- [X] STDIO include file
+	- [X] 16-bit Print String Function
 	- [X] Global Descriptor Table (GDT) Installation
 	- [X] Enter Protected Mode (32-bit)
 	- [X] Enable A20 line
+	- [X] VGA Programming in Protected Mode
+		- [X] Put Character on screen (including newline)
+		- [X] Move cursor to correct position on screen
+		- [X] Put a string on screen
+		- [X] Slide up a line when screen fills up **(Not in tutorial)**
 - [ ] and so on...
