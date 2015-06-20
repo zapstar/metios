@@ -1,6 +1,8 @@
 ;*******************************************************************************
 ; VGA Graphics routines for second stage bootloader (32-bit mode)
 ;*******************************************************************************
+%ifndef __BIOS__VIDEO32_INC_
+%define __BIOS__VIDEO32_INC_
 bits 32
 
 %define	VIDMEM	0xB8000		; Video memory location
@@ -235,3 +237,4 @@ clrscr:
 	call _move_cursor
 	popa
 	ret
+%endif ; __BIOS__VIDEO32_INC_

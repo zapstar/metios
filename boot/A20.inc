@@ -9,6 +9,8 @@
 ; in al, 0x64	; Read keyboard status register of controller into AL
 ; out 0x64, al	; Send command in AL to keyboard controller
 ;*******************************************************************************
+%ifndef __BIOS__A20_INC_
+%define __BIOS__A20_INC_
 bits 16
 
 enable_A20:
@@ -92,3 +94,4 @@ wait_till_output_buffer_clear:
 	test al, 0x01		; Bitwise AND with 1st bit and set ZF if == 0
 	jz wait_till_output_buffer_clear
 	ret
+%endif ; __BIOS__A20_INC_
