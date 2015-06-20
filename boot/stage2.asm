@@ -15,6 +15,8 @@ org	0x500
 %include "stdio.inc"
 ; Import GDT and its associated installer routine
 %include "gdt.inc"
+; Import function to enable the A20 line
+%include "A20.inc"
 
 ;******************************************************************************
 ; Global variables (DATA SECTION)
@@ -50,6 +52,9 @@ main:
 
 ; Install our GDT
 	call gdt_install
+
+; Enable A20 line (32-bit addressing, till now 20-bit addressing)
+	call enable_A20
 
 ; Enter protected mode (by setting bit-0 of CR0 to 1)
 	cli		; Disable interrupts

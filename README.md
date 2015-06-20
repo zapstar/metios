@@ -18,5 +18,5 @@ Progress
 	- [X] STDIO include file
 	- [X] Global Descriptor Table (GDT) Installation
 	- [X] Enter Protected Mode (32-bit)
-	- [ ] Enable A20 line
+	- [X] Enable A20 line
 - [ ] and so on...
