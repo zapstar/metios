@@ -24,6 +24,10 @@ rem Check for ImDisk installation
 where imdisk || ^
 echo ImDisk not in PATH && goto :error
 
+rem Check for nmake to be in the PATH
+where nmake || ^
+echo NMAKE not in PATH && goto :error
+
 rem Create the binary directory
 if not exist bin mkdir bin || ^
 echo Error making bin directory && goto :error
@@ -32,13 +36,9 @@ rem Change to boot loader directory
 cd boot || ^
 echo Did not find bootloader directory && goto :error
 
-rem Compile the first stage bootloader
-nasm boot.asm -f bin -o ..\bin\homebrew_floppy.img || cd ..\  ^
-echo Error building first stage bootloader && goto :error
-
-rem Compile the second stage bootloader
-nasm stage2.asm -f bin -o ..\bin\KERNLD.SYS || cd ..\  && ^
-echo Error building second stage bootloader && goto :error
+rem Make
+nmake || ^
+echo NMAKE failed && cd .. && goto :error
 
 rem Return back home
 cd .. || ^
