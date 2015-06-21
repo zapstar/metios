@@ -14,10 +14,11 @@ cd boot/
 make
 cd ../
 
-# Now copy second stage bootloader onto floppy
+# Now copy second stage bootloader and the kernel stub onto floppy
 losetup /dev/loop0 bin/homebrew_floppy.img
 mount /dev/loop0 /mnt -t msdos -o "fat=12"
 cp bin/KERNLD.SYS /mnt/
+cp bin/KERNEL.EXE /mnt/
 umount /mnt
 losetup -d /dev/loop0
 

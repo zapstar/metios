@@ -52,6 +52,10 @@ rem Now copy second stage bootloader onto floppy
 copy bin\KERNLD.SYS %DRIVE%:\ || ^
 echo Error copying 2nd stage bootloader. Remove floppy manually && goto :error
 
+rem Copy the kernel stub onto the floppy
+copy bin\KERNEL.EXE %DRIVE%:\ || ^
+echo Error copying kernel onto floppy. Remove floppy manually && goto :error
+
 rem Unmount the floppy, make it ready to boot
 imdisk -D -m %DRIVE%:\ || ^
 echo Error unmounting floppy, please force remove manually && goto :error

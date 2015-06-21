@@ -20,17 +20,13 @@ org	0x500
 %include "A20.inc"
 
 ;******************************************************************************
-; Global variables (DATA SECTION)
-;******************************************************************************
-.boot2_msg	db	"Intializing second stage bootloader...", 13, 10, 0
-
-;******************************************************************************
 ; Second Stage boot loader entry point
 ;******************************************************************************
 ; Real mode
 bits	16
 
 main:
+
 ; Disable interrupts for a while
 	cli
 
@@ -67,6 +63,12 @@ main:
 
 ; Make a far jump with offset 0x08 (code descriptor) in the GDT
 	jmp 0x08:stage3
+
+;******************************************************************************
+; 16-bit Second stage bootloader DATA SECTION
+;******************************************************************************
+.boot2_msg:
+	db	"Intializing second stage bootloader...", 13, 10, 0
 
 ;*******************************************************************************
 ; Stage 3 Bootloader
