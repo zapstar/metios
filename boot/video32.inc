@@ -75,7 +75,7 @@ _slide_up:
 ; NAME: _putc32()
 ;
 ; Function to put a character on screen (32-bit mode)
-; @pre: Place the character in BL register and call this routine
+; @pre: Push a character into stack and call this routine
 ; @post: Character is printed on the screen
 ;
 ; Each character is made up of two bytes. One for the actual character
@@ -89,6 +89,8 @@ _slide_up:
 ; after the string has been printed
 ;*******************************************************************************
 _putc32:
+	pop dword ebp			; Get the CALL stack 
+	pop word bx			; Populate the pushed value in BX
 	pusha
 ; Get current offset in EAX
 ; First calculate the correct number of bytes to offset for the rows
@@ -111,9 +113,9 @@ _putc32:
 	cmp bl, 0x0A
 	je .pc32_next_row
 ; Print a character, if its not newline
-	mov dl, bl
-	mov dh, CHATTR
-	mov word [edi], dx
+	mov dl, bl		; Now DL contains the actual character
+	mov dh, CHATTR		; Now DH contains the character attribute
+	mov word [edi], dx	; Move it onto desired video memory
 ; Update the position for the next character
 	inc byte [_cur_x]
 	cmp byte [_cur_x], COLS
@@ -130,6 +132,7 @@ _putc32:
 ; We're done with printing a character
 .pc32_done:
 	popa
+	push dword ebp		; Restore call stack
 	ret
 
 ;*******************************************************************************
@@ -170,7 +173,7 @@ _move_cursor:
 ; NAME: putc32()
 ;
 ; Function to print a character on screen (32-bit mode)
-; @pre: BL contains the character to be printed on screen
+; @pre: Push a  character (2 byte) with high byte 0 and then call the routine
 ; @post: Character is printed on the screen
 ;
 ; Wrapper to _putc32 internal routine. Can be exposed to external routines
@@ -186,18 +189,22 @@ putc32:
 ; NAME: puts32()
 ;
 ; Function to put a string on screen (32-bit mode)
-; @pre: Place the string address in ESI register and call this routine
-; @post: Character is printed on the screen
+; @pre: Push the address (32-bit) and call the routine
+; @post: String is printed on the screen
 ;
 ; Internally we make use of putc32 routine
 ;*******************************************************************************
 puts32:
+	pop dword ebp		; Get the call stack
+	pop dword esi		; Populate the pushed result in ESI
 	pusha
+	xor bh, bh
 .ps32_loop:
 	mov bl, byte [esi]	; Copy the string's byte into BL
 	cmp bl, 0		; See if NULL, if so exit
 	je .ps32_done
 ; Character is not NULL make the putc32() call with BL holding the character
+	push word bx
 	call _putc32
 ; Go to the next character
 	inc esi
@@ -206,6 +213,7 @@ puts32:
 ; Move the cursor to the correct position on the screen
 	call _move_cursor
 	popa
+	push dword ebp		; Restore the call stack
 	ret
 
 ;*******************************************************************************

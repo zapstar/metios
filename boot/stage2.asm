@@ -13,7 +13,7 @@ org	0x500
 	jmp main
 
 ; Import STDIO routines for bootloader
-%include "stdio.inc"
+%include "video16.inc"
 ; Import GDT and its associated installer routine
 %include "gdt.inc"
 ; Import function to enable the A20 line
@@ -22,7 +22,7 @@ org	0x500
 ;******************************************************************************
 ; Global variables (DATA SECTION)
 ;******************************************************************************
-boot2_init_msg	db	"Intializing second stage bootloader...", 13, 10, 0
+.boot2_msg	db	"Intializing second stage bootloader...", 13, 10, 0
 
 ;******************************************************************************
 ; Second Stage boot loader entry point
@@ -48,7 +48,7 @@ main:
 	sti
 
 ; Print the initializing message for us
-	mov si, boot2_init_msg
+	push word .boot2_msg
 	call puts16
 
 ; Install our GDT
@@ -96,7 +96,7 @@ bits 32
 	call clrscr
 
 ; Print a welcome message
-	mov esi, .miteos_msg
+	push dword .miteos_msg
 	call puts32
 
 ; HALT for now. We'll look at what to do here later on
