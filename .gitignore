@@ -32,3 +32,6 @@
 bin
 log
 copy.txt
+
+# Bochs INI file
+bx_enh_dbg.ini

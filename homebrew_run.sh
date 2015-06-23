@@ -11,7 +11,7 @@ set -e
 # First compile the bootloader
 mkdir -p bin/
 cd boot/
-make
+make > /dev/null
 cd ../
 
 # Now copy second stage bootloader and the kernel stub onto floppy
@@ -22,9 +22,14 @@ cp bin/KERNEL.EXE /mnt/
 umount /mnt
 losetup -d /dev/loop0
 
+# Check for the presence of BOCHS
+# Use this to install bochs if you've compiled it. (two lines, make into one)
+# update-alternatives --install /usr/local/sbin/bochs \
+# bochs /opt/bochs/bin/bochs 2000
+which bochs > /dev/null
+
 # Run home made bootloader and kernel
 # With X workaround see this website for more info. Or if it has been fixed
 # https://bugs.launchpad.net/ubuntu/+source/bochs/+bug/980167
-
 LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libXpm.so.4 \
-bochs -f homebrew_bochsrc-linux.txt
+bochs -q -f ./homebrew_bochsrc-linux.txt
