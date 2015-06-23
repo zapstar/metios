@@ -1,7 +1,7 @@
 # Bochsrc file for home brew bootloader
 
 # Use SDL Library instead of X, Ubuntu workaround
-display_library: sdl
+display_library: x
 
 # Configuration Interface is textual instead of X Windows
 config_interface: textconfig
