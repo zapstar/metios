@@ -33,27 +33,27 @@
 .code16
 .global read_sectors16
 read_sector16:
-	pusha				/* Save registers */
+        pusha                           /* Save registers */
 /* Reset the floppy drive */
 .reset:
-	movb $FLOPPY_CMD_DRV_RESET, %ah	/* Reset floppy disk function */
-	int $BIOS_INTERRUPT		/* Invoke BIOS interrupt */
-	jc .reset
+        movb $FLOPPY_CMD_DRV_RESET, %ah /* Reset floppy disk function */
+        int $BIOS_INTERRUPT             /* Invoke BIOS interrupt */
+        jc .reset
 /* Read the sectors into disk */
-	xor %si, %si 			/* %SI (# retries) < FLOPPY_RETRIES */
+        xor %si, %si                    /* %SI (# retries) < FLOPPY_RETRIES */
 .read:
-	movb $FLOPPY_CMD_DRV_READ, %ah	/* Floppy drive read sectors function */
-	int $BIOS_INTERRUPT		/* Invoke BIOS interrupt */
-	jnc .done			/* If carry not set, then no error */
-	inc %si				/* Increment retries count */
-	cmpw $FLOPPY_RETRIES, %si
-	jl .read			/* If SI < FLOPPY_RETRIES, read again */
+        movb $FLOPPY_CMD_DRV_READ, %ah  /* Floppy drive read sectors function */
+        int $BIOS_INTERRUPT             /* Invoke BIOS interrupt */
+        jnc .done                       /* If carry not set, then no error */
+        inc %si                         /* Increment retries count */
+        cmpw $FLOPPY_RETRIES, %si
+        jl .read                        /* If SI < FLOPPY_RETRIES, read again */
 /* Error condition */
 
 /* Success condition */
 .done:
-	popa				/* Restore registers */
-	ret
+        popa                            /* Restore registers */
+        ret
 
 /******************************************************************************
  * NAME: lba_to_chs
@@ -64,8 +64,9 @@ read_sector16:
  * Head Number = logical sector / sectors per track % number of heads
  * Sector Number = logical sector % sectors per track + 1
  *
- * Abbr: SPT (Sectors per track), LBA (logical block address)
- * HPC (heads per cylinder)
+ * Abbr: SPT (Sectors per track)
+ *       LBA (logical block address)
+ *       HPC (heads per cylinder)
  *
  * @pre: AX should contain the logical sector (LBA)
  * @post: CH will contain the cylinder number
@@ -74,23 +75,21 @@ read_sector16:
  *
  ******************************************************************************/
  lba_to_chs:
- 	xorw %dx, %dx
- 	divw $FLOPPY_SECTS_PER_TRACK	/* DX = LBA % SPT
- 					 * AX = LBA / SPT
- 					 */
- 	movb %dl, %cl
- 	inc %cl				/* CL now has sector number */
- 	xorw %dx, %dx
- 	divw $FLOPPY_HEADS_PER_CYLNDR	/* DX = LBA / SPT % HPC
- 					 * AX = LBA /SPT / HPC
- 	 				 */
- 	movb %al, %ch 			/* CH now has cylinder number */
- 	movb %dl, %dh			/* DH now has the head number */
- 	ret
+         xorw %dx, %dx
+         divw ($FLOPPY_SECTS_PER_TRACK)  /* DX = LBA % SPT, AX = LBA / SPT */
+
+         movb %dl, %cl
+         inc %cl                         /* CL now has sector number */
+         xorw %dx, %dx
+         divw ($FLOPPY_HEADS_PER_CYLNDR) /* DX = LBA / SPT % HPC,
+                                            AX = LBA /SPT / HPC */
+
+         movb %al, %ch                   /* CH now has cylinder number */
+         movb %dl, %dh                   /* DH now has the head number */
+         ret
 
 /******************************************************************************
  * NAME: chs_to_lba
  *
  * PURPOSE: Convert CHS notation to LBA
-
- */
+ ******************************************************************************/
