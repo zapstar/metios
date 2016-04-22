@@ -1,7 +1,7 @@
 CC = gcc
 LD = ld
 OBJDUMP = objdump
-
+OBJCOPY = objcopy
 
 GENOBJ = -c
 
@@ -22,7 +22,15 @@ CFLAGS += -O0
 CFLAGS += -Wall
 CFLAGS += -Werror
 
-INCFLAGS += -I.
+LDFLAGS = -m elf_i386 -N -e start -Ttext 0x0
+
+all: boot
 
 boot:
 	$(CC) $(CFLAGS) $(INCFLAGS) $(GENOBJ) floppy16.S
+	$(LD) $(LDFLAGS) -o boot.o floppy16.o
+	$(OBJDUMP) -S boot.o > boot.asm
+	$(OBJCOPY) -S -O binary -j .text boot.o boot
+
+clean:
+	rm -f boot boot.asm *.o
