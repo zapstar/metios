@@ -1,0 +1,26 @@
+# Bochsrc file for home brew bootloader
+
+# Use SDL Library instead of X, Ubuntu workaround
+display_library: sdl
+
+# Configuration Interface is textual instead of X Windows
+config_interface: textconfig
+
+# Boot using Floppy Disk A
+boot: a
+
+# Floppy Disk A characteristics (1.44M, inserted)
+floppya: 1_44="bin/homebrew_floppy.img", status=inserted
+
+# Disable mouse
+mouse: enabled=0
+
+# If you've built sound driver, include a dummy
+#sound: driver=dummy
+
+# Give 32MB RAM
+megs: 32
+
+# Tell Bochs what do in case of errors
+error: action=report
+info: action=report

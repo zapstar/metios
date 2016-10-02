@@ -61,7 +61,7 @@ imdisk -D -m %DRIVE%:\ || ^
 echo Error unmounting floppy, please force remove manually && goto :error
 
 rem Run home made bootloader and kernel
-%BOCHS% -q -f homebrew_bochsrc-win32.txt
+%BOCHS% -q -f mybl_bochsrc-win32.txt
 
 rem Success, go to EOF
 goto :EOF

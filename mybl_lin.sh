@@ -32,4 +32,4 @@ which bochs > /dev/null
 # With X workaround see this website for more info. Or if it has been fixed
 # https://bugs.launchpad.net/ubuntu/+source/bochs/+bug/980167
 LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libXpm.so.4 \
-bochs -q -f ./homebrew_bochsrc-linux.txt
+bochs -q -f ./mybl_bochsrc-linux.txt
